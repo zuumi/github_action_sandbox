@@ -15,13 +15,13 @@ jobs:
 
     - name: Get tag information
       run: |
-        echo "$(echo ${{github.ref}} | sed 's|refs/tags/||g')"
+        echo "##[set-output name=tag;]$(echo ${{github.ref}} | sed 's|refs/tags/||g')"
       id: get_tag_name
 
     - name: Generate release note
       run: |
         # 前のステップで取得したタグ名を取得
-        echo "${{ steps.get_tag_name.outputs.tag_name }}"
+        echo "${{ steps.get_tag_name.outputs.tag }}"
         # 指定されたタグから1つ前のタグを検索
         PREVIOUS_TAG=$(git describe --tags "$TAG_NAME"^)
         # 指定された期間のコミットメッセージを取得
