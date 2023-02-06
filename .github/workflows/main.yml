@@ -21,7 +21,7 @@ jobs:
     - name: Generate release note
       run: |
         # 前のステップで取得したタグ名を取得
-        TAG_NAME=$(echo "${{ steps.tag_info.outputs.tag }}")
+        TAG_NAME=$(echo "${{ steps.tag_info }}")
         # 指定されたタグから1つ前のタグを検索
         PREVIOUS_TAG=$(git describe --tags "$TAG_NAME"^)
         # 指定された期間のコミットメッセージを取得
