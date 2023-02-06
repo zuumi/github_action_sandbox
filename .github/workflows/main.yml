@@ -15,7 +15,7 @@ jobs:
 
     - name: Get tag information
       run: |
-        echo "## Current tag name: ${{github.ref#refs/tags/}}"
+        echo "${{ on.push.tags }}"
       id: tag_info
 
     - name: Generate release note
