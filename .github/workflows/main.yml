@@ -14,7 +14,10 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Get tag information
-      run: echo "Current tag: ${GITHUB_REF#refs/tags/}"
+      run: |
+        echo "## Current tag name: ${{GITHUB_REF#refs/tags/}}"
+        echo "## Current tag message: $(git log -1 ${{GITHUB_REF}} --pretty=format:'%s')"
+        echo "## Current commit hash: $(git rev-parse HEAD)"
       id: tag_info
 
     - name: Generate release note
