@@ -20,14 +20,12 @@ jobs:
 
     - name: Generate release note
       run: |
-        # 前のステップで取得したタグ名を取得
-        TAG_NAME=$(echo "${{ steps.get_tag_name.outputs.tag }}")
         # 指定されたタグから1つ前のタグを検索
-        PREVIOUS_TAG=$(git describe --tags "$TAG_NAME"^)
+        export PREVIOUS_TAG=$(git describe --tags "${{ steps.get_tag_name.outputs.tag }}"^)
         # 指定された期間のコミットメッセージを取得
-        COMMIT_LOG=$(git log "$PREVIOUS_TAG"...HEAD --pretty=format:"%s")
+        export COMMIT_LOG=$(git log "$PREVIOUS_TAG"...HEAD --pretty=format:"%s")
         # リリースノートを生成
-        RELEASE_NOTES="## Changes since $PREVIOUS_TAG $COMMIT_LOG"
+        export RELEASE_NOTES="## Changes since $PREVIOUS_TAG $COMMIT_LOG"
 
     - name: Create release
       uses: actions/create-release@v1
