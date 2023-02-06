@@ -15,7 +15,7 @@ jobs:
 
     - name: Get tag information
       run: |
-        echo "${{github.ref#refs/tags/}}"
+        echo "$(echo ${{github.ref}} | sed 's|refs/tags/||g')"
       id: tag_info
 
     - name: Generate release note
