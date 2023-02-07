@@ -20,12 +20,9 @@ jobs:
 
     - name: Generate release note
       run: |
-        # 指定されたタグから1つ前のタグを検索
-        export PREVIOUS_TAG=$(git describe --tags ${{ steps.get_tag_name.outputs.tag }}^)
-        # 指定された期間のコミットメッセージを取得
-        export COMMIT_LOG=$(git log "$PREVIOUS_TAG"...HEAD --pretty=format:"%s")
-        # リリースノートを生成
-        export RELEASE_NOTES="## Changes since $PREVIOUS_TAG $COMMIT_LOG"
+        # generate release note using shell script or any other method
+        echo "## What's Changed" > release_note.md
+        git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"- %s (%h) [#%b](https://github.com/<OWNER>/<REPO>/pull/%b)" >> release_note.md
 
     - name: Create release
       uses: actions/create-release@v1
@@ -34,6 +31,4 @@ jobs:
       with:
         tag_name: ${{ steps.get_tag_name.outputs.tag }}
         release_name: Release ${{ steps.get_tag_name.outputs.tag }}
-        body: |
-          # Add the generated release notes here
-          ${{ env.RELEASE_NOTES }}
+        body_file: release_note.md
