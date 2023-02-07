@@ -20,7 +20,7 @@ jobs:
 
     - name: Get tag information
       run: |
-        echo "##[set-output name=pre_tag;]$(git describe --tags --abbrev=0 HEAD^)"
+        echo "##[set-output name=pre_tag;]$(git tag --sort=-creatordate | sed -n 2p)"
       id: get_pre_tag_name
 
     - name: Generate release note
