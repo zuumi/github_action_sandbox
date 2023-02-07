@@ -21,11 +21,11 @@ jobs:
     - name: Generate release note
       run: |
         # 指定されたタグから1つ前のタグを検索
-        export PREVIOUS_TAG=$(git describe --tags ${{ steps.get_tag_name.outputs.tag }}^)
+        echo PREVIOUS_TAG=$(git describe --tags ${{ steps.get_tag_name.outputs.tag }}^) >> $GITHUB_ENV
         # 指定された期間のコミットメッセージを取得
-        export COMMIT_LOG=$(git log "$PREVIOUS_TAG"...HEAD --pretty=format:"%s")
+        echo COMMIT_LOG=$(git log ${{ env.PREVIOUS_TAG }}...HEAD --pretty=format:"%s") >> $GITHUB_ENV
         # リリースノートを生成
-        export RELEASE_NOTES="## Changes since $PREVIOUS_TAG $COMMIT_LOG"
+        echo RELEASE_NOTES="## Changes since ${{ env.PREVIOUS_TAG }} ${{ env.COMMIT_LOG }}" >> $GITHUB_ENV
 
     - name: Create release
       uses: actions/create-release@v1
