@@ -22,7 +22,7 @@ jobs:
       run: |
         # generate release note using shell script or any other method
         echo "## What's Changed" > release_note.md
-        git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"- %s (%h) [#%b](https://github.com/<OWNER>/<REPO>/pull/%b)" >> release_note.md
+        git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"- %s (%h) [#%b]" >> release_note.md
 
     - name: Create release
       uses: actions/create-release@v1
