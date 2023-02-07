@@ -13,11 +13,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Get tag information
-      run: |
-        echo "##[set-output name=tag;]$(echo ${{github.ref}} | sed 's|refs/tags/||g')"
-      id: get_tag_name
-
     - name: Generate release note
       run: |
         # generate release note using shell script or any other method
