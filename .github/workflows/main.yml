@@ -18,16 +18,13 @@ jobs:
         echo "##[set-output name=tag;]$(echo ${{github.ref}} | sed 's|refs/tags/||g')"
       id: get_tag_name
 
-    - name: Get tag information
-      run: |
-        echo "##[set-output name=pre_tag;]$(git tag --sort=-creatordate | sed -n 2p)"
-      id: get_pre_tag_name
-
     - name: Generate release note
       run: |
-        # generate release note using shell script or any other method
-        echo "## What's Changed" > release_note.md
-        git log ${{ steps.get_pre_tag_name.outputs.pre_tag }}..HEAD --pretty=format:"- %s (%h) [#%b]" >> release_note.md
+        PREVIOUS_TAG=$(git tag --sort=-creatordate | sed -n 2p)
+        echo "PREVIOUS_TAG: $PREVIOUS_TAG"
+        COMMIT_SUMMARY="$(git log --oneline --pretty=tformat:"%h %s" $PREVIOUS_TAG..${{ github.ref }})"
+        COMMIT_SUMMARY="${COMMIT_SUMMARY//$'\n'/'%0A'}"
+        echo ::set-output name=COMMIT_SUMMARY::$COMMIT_SUMMARY
 
     - name: Create release
       uses: actions/create-release@v1
@@ -36,4 +33,7 @@ jobs:
       with:
         tag_name: ${{ steps.get_tag_name.outputs.tag }}
         release_name: Release ${{ steps.get_tag_name.outputs.tag }}
-        body_file: release_note.md
+        body: |
+          ${{ steps.get_commit_summary.outputs.COMMIT_SUMMARY }}
+        draft: false
+        prerelease: false
