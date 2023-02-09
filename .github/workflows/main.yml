@@ -20,7 +20,7 @@ jobs:
 
     - name: Generate release note
       run: |
-        echo ${{ steps.get_tag_name.outputs.tag }}
+        echo "${{ steps.get_tag_name.outputs.tag }}"
         PREVIOUS_TAG=$(git tag --sort=-creatordate | sed -n 2p)
         echo ${{ PREVIOUS_TAG }}
         echo "PREVIOUS_TAG: $PREVIOUS_TAG"
