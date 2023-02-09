@@ -3,7 +3,7 @@ name: Release Note on Tag Push
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
 
 jobs:
   create_release_note:
