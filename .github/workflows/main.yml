@@ -1,41 +1,42 @@
-name: Release Note on Tag Push
-
 on:
   push:
     tags:
       - 'v*'
 
+name: Create Release
+
 jobs:
-  create_release_note:
+  build:
+    name: Create Release
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-    - name: Get tag information
-      run: |
-        echo "##[set-output name=tag;]$(echo ${{github.ref}} | sed 's|refs/tags/||g')"
-      id: get_tag_name
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
 
-    - name: Generate release note
-      run: |
-        echo "${{ steps.get_tag_name.outputs.tag }}"
-        PREVIOUS_TAG=$(git tag --sort=-creatordate | sed -n 2p)
-        echo $(git tag --sort=-creatordate | sed -n 2p)
-        echo "PREVIOUS_TAG: $PREVIOUS_TAG"
-        COMMIT_SUMMARY="$(git log --oneline --pretty=tformat:"%h %s" $PREVIOUS_TAG..${{ github.ref }})"
-        COMMIT_SUMMARY="${COMMIT_SUMMARY//$'\n'/'%0A'}"
-        echo ::set-output name=COMMIT_SUMMARY::$COMMIT_SUMMARY
+      - name: Get commit summary
+        id: get_commit_summary
+        run: |
+          PREVIOUS_TAG=$(git tag --sort=-creatordate | sed -n 2p)
+          echo "PREVIOUS_TAG: $PREVIOUS_TAG"
+          COMMIT_SUMMARY="$(git log --oneline --pretty=tformat:"%h %s" $PREVIOUS_TAG..${{ github.ref }})"
+          COMMIT_SUMMARY="${COMMIT_SUMMARY//$'\n'/'%0A'}"
+          echo ::set-output name=COMMIT_SUMMARY::$COMMIT_SUMMARY
 
-    - name: Create release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.SECRET_TOKEN }}
-      with:
-        tag_name: ${{ steps.get_tag_name.outputs.tag }}
-        release_name: Release ${{ steps.get_tag_name.outputs.tag }}
-        body: |
-          ${{ steps.get_commit_summary.outputs.COMMIT_SUMMARY }}
-        draft: false
-        prerelease: false
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          release_name: Release ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ${{ steps.get_commit_summary.outputs.COMMIT_SUMMARY }}
+          draft: false
+          prerelease: false
