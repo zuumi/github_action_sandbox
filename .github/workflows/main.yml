@@ -3,10 +3,10 @@ name: Release Note on Tag Push
 on:
   push:
     tags:
-      - 'v*'
+      - '*'
 
 jobs:
-  create-release-note:
+  create_release_note:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,27 +15,28 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Get the version
-      id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
-
-    - name: Get commit summary
-      id: get_commit_summary
+    - name: Get tag information
       run: |
-        PREVIOUS_TAG=$(git tag --sort=-creatordate | sed -n 2p)
-        echo "PREVIOUS_TAG: $PREVIOUS_TAG"
-        COMMIT_SUMMARY="$(git log --oneline --pretty=tformat:"%h %s" $PREVIOUS_TAG..${{ github.ref }})"
-        COMMIT_SUMMARY="${COMMIT_SUMMARY//$'\n'/'%0A'}"
-        echo ::set-output name=COMMIT_SUMMARY::$COMMIT_SUMMARY
+        echo "##[set-output name=tag;]$(echo ${{github.ref}} | sed 's|refs/tags/||g')"
+      id: get_tag_name
+
+    - name: Generate release note
+      run: |
+        # 指定されたタグから1つ前のタグを検索
+        echo "PREVIOUS_TAG=$(git describe --tags ${{ steps.get_tag_name.outputs.tag }}^)" >> $GITHUB_ENV
+        # 指定された期間のコミットメッセージを取得
+        echo "COMMIT_LOG=$(git log ${{ env.PREVIOUS_TAG }}...HEAD --pretty=format:"%s")" >> $GITHUB_ENV
+        # リリースノートを生成
+        echo "RELEASE_NOTES="## Changes since ${{ env.PREVIOUS_TAG }} ${{ env.COMMIT_LOG }}""" >> $GITHUB_ENV
+        # generate release note using shell script or any other method
+        echo "## What's Changed" > release_note.md
+        git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"- %s" >> release_note.md
 
     - name: Create release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.SECRET_TOKEN }}
       with:
-        tag_name: ${{ steps.get_version.outputs.VERSION }}
-        release_name: Release ${{ steps.get_version.outputs.VERSION }}
-        body: |
-          ${{ steps.get_commit_summary.outputs.COMMIT_SUMMARY }}
-        draft: false
-        prerelease: false
+        tag_name: ${{ steps.get_tag_name.outputs.tag }}
+        release_name: Release ${{ steps.get_tag_name.outputs.tag }}
+        body_file: release_note.md
